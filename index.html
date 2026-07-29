@@ -3,319 +3,286 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Family Edit — Bay Area Family Events</title>
+<title>THE FAMILY EDIT — BAY AREA FAMILY EVENTS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Archivo+Expanded:wght@700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
   :root{
-    --paper:#EEF4FC;
-    --paper-raised:#FFFFFF;
-    --ink:#173A5E;
-    --ink-soft:#5C728C;
-    --poppy:#FF6B6B;
-    --poppy-deep:#E85454;
-    --bay:#1D6FC4;
-    --bay-pale:#DCEAFB;
-    --line:#D9E4F2;
-    --stamp:#FFD93D;
-    --gold:#FFD93D;
+    --paper:#FFFFFF;
+    --ink:#17140F;
+    --ink-soft:#6B655C;
+    --ink-faint:#A29C90;
+    --accent:#3D4A34;
+    --accent-pale:#EEF0E9;
+    --line:#E5E2DC;
+
+    /* muted tag tokens — quieter than the map on purpose */
+    --tag-ongoing-bg:#E8EDE2;
+    --tag-ongoing-ink:#4F6238;
+    --tag-monthly-bg:#EDE6EE;
+    --tag-monthly-ink:#6F4A70;
+    --tag-weekly-bg:#E4EAF1;
+    --tag-weekly-ink:#415B80;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
     background:var(--paper);
     color:var(--ink);
-    font-family:'Source Sans 3', sans-serif;
+    font-family:'Archivo', sans-serif;
     -webkit-font-smoothing:antialiased;
-  }
-  h1,h2,h3,.display{
-    font-family:'Merriweather', serif;
-    font-weight:600;
-    letter-spacing:normal;
-  }
-  .mono{
-    font-family:'Space Mono', monospace;
+    font-size:14.5px;
   }
   a{color:var(--ink);}
 
-  /* ---------- Shell ---------- */
-  .shell{max-width:920px;margin:0 auto;padding:0 20px 80px;}
+  .shell{max-width:960px;margin:0 auto;padding:0 32px 140px;}
   header.top{
-    padding:28px 20px 0;
-    max-width:920px;
+    padding:44px 32px 0;
+    max-width:960px;
     margin:0 auto;
+    border-bottom:1px solid var(--ink);
+    padding-bottom:24px;
   }
   .masthead{
-    display:flex;
-    align-items:baseline;
-    justify-content:space-between;
-    flex-wrap:wrap;
-    gap:10px;
-    border-bottom:2px solid var(--ink);
-    padding-bottom:14px;
+    display:grid;
+    grid-template-columns:1fr auto;
+    align-items:end;
+    gap:20px;
+  }
+  .masthead .eyebrow{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:10px;
   }
   .masthead .title{
-    font-size:28px;
-    font-weight:700;
-  }
-  .masthead .title .the{
-    font-size:13px;
-    display:block;
-    font-family:'Space Mono', monospace;
-    letter-spacing:0.18em;
+    font-family:'Archivo Expanded', sans-serif;
+    font-weight:800;
+    font-size:34px;
+    letter-spacing:-0.01em;
     text-transform:uppercase;
-    color:var(--poppy-deep);
-    margin-bottom:2px;
-    font-weight:500;
+    line-height:0.95;
   }
   .masthead .dateline{
-    font-family:'Space Mono', monospace;
-    font-size:12px;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
     color:var(--ink-soft);
     text-align:right;
+    line-height:1.6;
   }
 
   nav.tabs{
     display:flex;
-    gap:6px;
-    margin:18px 0 30px;
+    gap:0;
+    margin:0 0 56px;
   }
   nav.tabs button{
-    font-family:'Space Mono', monospace;
-    font-size:12.5px;
-    letter-spacing:0.04em;
+    font-family:'Archivo', sans-serif;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.12em;
     text-transform:uppercase;
     background:transparent;
-    border:1.5px solid var(--ink);
-    color:var(--ink);
-    padding:9px 16px;
-    border-radius:100px;
+    border:none;
+    border-right:1px solid var(--line);
+    color:var(--ink-faint);
+    padding:16px 24px 16px 0;
+    margin-right:24px;
     cursor:pointer;
-    transition:all .15s ease;
+    transition:color .15s ease;
   }
-  nav.tabs button:hover{ background:var(--bay-pale); }
-  nav.tabs button.active{
-    background:var(--ink);
-    color:var(--paper);
-    border-color:var(--ink);
-  }
+  nav.tabs button:last-child{ border-right:none; }
+  nav.tabs button:hover{ color:var(--ink); }
+  nav.tabs button.active{ color:var(--accent); }
 
   .view{display:none;}
-  .view.active{display:block; animation:fade .25s ease;}
-  @keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
-
-  /* ---------- Newsletter ---------- */
-  .intro-card{
-    background:var(--paper-raised);
-    border:1px solid var(--line);
-    border-radius:4px;
-    padding:22px 24px;
-    margin-bottom:34px;
-    position:relative;
-  }
-  .intro-card::before{
-    content:"";
-    position:absolute; left:0; top:0; bottom:0;
-    width:4px;
-    background:var(--poppy);
-    border-radius:4px 0 0 4px;
-  }
-  .subject-tease{
-    font-family:'Space Mono', monospace;
-    font-size:11px;
-    text-transform:uppercase;
-    letter-spacing:0.1em;
-    color:var(--bay);
-    margin:0 0 8px;
-  }
-  .intro-card p{
-    margin:0;
-    font-size:16px;
-    line-height:1.6;
-    color:var(--ink);
-  }
-  .intro-card p + p{margin-top:10px;}
+  .view.active{display:block; animation:fade .3s ease;}
+  @keyframes fade{from{opacity:0;} to{opacity:1;}}
 
   .section-label{
-    font-family:'Space Mono', monospace;
-    font-size:12px;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.14em;
     text-transform:uppercase;
-    letter-spacing:0.12em;
-    color:var(--ink-soft);
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin:0 0 16px;
-  }
-  .section-label::after{
-    content:"";
-    flex:1;
-    height:1px;
-    background:var(--line);
+    color:var(--ink);
+    margin:0 0 24px;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--ink);
   }
 
-  .three-try{
+  /* ---------- Three to see ---------- */
+  .three-see{
     display:grid;
     grid-template-columns:repeat(3,1fr);
-    gap:14px;
-    margin-bottom:44px;
-  }
-  @media (max-width:700px){ .three-try{grid-template-columns:1fr;} }
-  .try-card{
-    background:var(--paper-raised);
+    gap:0;
+    margin-bottom:72px;
     border:1px solid var(--line);
-    border-radius:10px;
-    padding:20px 18px;
-    position:relative;
-    overflow:hidden;
   }
-  .try-card .num{
-    width:38px;
-    height:38px;
-    border-radius:8px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-family:'Space Mono', monospace;
+  @media (max-width:760px){ .three-see{grid-template-columns:1fr;} }
+  .see-card{
+    padding:28px 24px;
+    border-right:1px solid var(--line);
+  }
+  .see-card:last-child{ border-right:none; }
+  .see-card .num{
+    font-family:'Archivo Expanded', sans-serif;
+    font-weight:800;
+    font-size:12px;
+    color:var(--accent);
+    margin-bottom:16px;
+    letter-spacing:0.05em;
+  }
+  .see-card h3{
+    font-size:19px;
     font-weight:700;
+    margin:0 0 10px;
+    line-height:1.25;
+  }
+  .see-card h3 a{color:var(--ink); text-decoration:none;}
+  .see-card h3 a:hover{color:var(--accent);}
+  .see-card p{
     font-size:13px;
-    margin-bottom:12px;
-    background:#FDE4DE;
-    color:var(--poppy-deep);
-  }
-  .three-try .try-card:nth-child(2) .num{ background:var(--bay-pale); color:var(--bay); }
-  .three-try .try-card:nth-child(3) .num{ background:#FFF1BF; color:#9A6E00; }
-  .try-card h3{
-    font-size:18px;
-    margin:0 0 6px;
-    line-height:1.3;
-  }
-  .try-card h3 a{color:var(--ink); text-decoration:none; border-bottom:1px solid transparent;}
-  .try-card h3 a:hover{color:var(--poppy-deep); border-bottom-color:var(--poppy-deep);}
-  .try-card p{
-    font-size:13.5px;
     color:var(--ink-soft);
     margin:0;
     line-height:1.55;
   }
 
-  .region-block{margin-bottom:36px;}
-  .region-title{
-    font-size:20px;
-    margin:0 0 14px;
-    display:flex;
-    align-items:baseline;
-    gap:8px;
+  /* ---------- Region blocks ---------- */
+  .region-block{
+    display:grid;
+    grid-template-columns:180px 1fr;
+    gap:24px;
+    margin-bottom:0;
+    border-top:1px solid var(--ink);
+    padding:28px 0;
   }
-  .region-title .tag{
-    font-family:'Space Mono', monospace;
-    font-size:11px;
-    color:var(--bay);
-    background:var(--bay-pale);
-    padding:2px 8px;
-    border-radius:100px;
-    font-weight:500;
+  @media (max-width:640px){ .region-block{grid-template-columns:1fr;} }
+  .region-title-col{ }
+  .region-title{
+    font-family:'Archivo Expanded', sans-serif;
+    font-weight:800;
+    font-size:16px;
+    text-transform:uppercase;
+    letter-spacing:-0.005em;
+    margin:0 0 4px;
+    color:var(--ink);
   }
   .region-title .sf-label{
-    font-family:'Space Mono', monospace;
+    display:block;
+    font-family:'Archivo', sans-serif;
+    font-size:10px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--ink-faint);
+    margin-top:4px;
+  }
+  .region-count{
     font-size:11px;
-    font-weight:400;
-    color:var(--ink-soft);
-    letter-spacing:0.03em;
+    font-weight:600;
+    color:var(--accent);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
   }
 
   .event-row{
-    display:flex;
-    gap:16px;
-    align-items:flex-start;
-    background:var(--paper-raised);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:16px 18px;
-    margin-bottom:10px;
+    padding:16px 0;
+    border-bottom:1px solid var(--line);
   }
-  .event-stamp{
-    flex:0 0 46px;
-    min-height:38px;
-    background:var(--stamp);
-    border-radius:8px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-family:'Space Mono', monospace;
-    font-weight:700;
-    font-size:8.5px;
-    color:var(--ink);
-    text-align:center;
-    line-height:1.3;
-    padding:4px 2px;
-    margin-top:2px;
-  }
+  .event-row:last-child{ border-bottom:none; padding-bottom:0; }
+  .event-row:first-child{ padding-top:0; }
   .event-body h4{
     margin:0 0 6px;
-    font-size:16.5px;
-    font-family:'Merriweather', serif;
-    font-weight:600;
+    font-size:15.5px;
+    font-weight:700;
+    display:inline;
   }
   .event-body h4 a{text-decoration:none; color:var(--ink);}
-  .event-body h4 a:hover{color:var(--poppy-deep);}
+  .event-body h4 a:hover{color:var(--accent);}
+  .event-tag{
+    display:inline-block;
+    font-size:9px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    padding:2px 7px;
+    margin-left:8px;
+    vertical-align:middle;
+    /* fallback */
+    color:var(--tag-ongoing-ink);
+    background:var(--tag-ongoing-bg);
+  }
+  .event-tag.ongoing{ color:var(--tag-ongoing-ink); background:var(--tag-ongoing-bg); }
+  .event-tag.monthly{ color:var(--tag-monthly-ink); background:var(--tag-monthly-bg); }
+  .event-tag.weekly{  color:var(--tag-weekly-ink);  background:var(--tag-weekly-bg); }
   .event-desc{
-    font-size:13.5px;
+    font-size:13px;
     color:var(--ink-soft);
-    margin:0 0 6px;
-    line-height:1.45;
+    margin:6px 0 8px;
+    line-height:1.5;
   }
   .event-meta{
-    font-family:'Space Mono', monospace;
-    font-size:12px;
-    color:var(--bay);
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--ink-soft);
     display:flex;
     flex-wrap:wrap;
-    gap:4px 14px;
+    gap:2px 20px;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
   }
+  .event-meta .k{ color:var(--ink-faint); font-weight:700; margin-right:4px; }
 
   .demo-note{
-    margin-top:40px;
+    margin-top:48px;
     font-size:12px;
-    color:var(--ink-soft);
-    border-top:1px dashed var(--line);
-    padding-top:14px;
+    color:var(--ink-faint);
+    padding-top:20px;
+    border-top:1px solid var(--ink);
+    line-height:1.6;
   }
 
   /* ---------- Map ---------- */
   #map{
-    height:520px;
-    border-radius:6px;
-    border:1px solid var(--line);
-    margin-bottom:14px;
+    height:480px;
+    border:1px solid var(--ink);
+    margin-bottom:16px;
+    filter:grayscale(0.55) contrast(1.03);
   }
-  .leaflet-popup-content{font-family:'Source Sans 3', sans-serif; font-size:13px;}
-  .leaflet-popup-content b{font-family:'Merriweather', serif; font-size:14.5px;}
+  .leaflet-popup-content{font-family:'Archivo', sans-serif; font-size:13px;}
+  .leaflet-popup-content b{font-weight:800; font-size:14px;}
   .map-legend{
     display:flex;
     flex-wrap:wrap;
-    gap:8px 14px;
-    margin-bottom:8px;
+    gap:8px 20px;
+    margin-bottom:10px;
   }
   .legend-chip{
     display:inline-flex;
     align-items:center;
     gap:6px;
-    font-family:'Space Mono', monospace;
-    font-size:11.5px;
+    font-size:10.5px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
     color:var(--ink-soft);
   }
   .legend-chip i{
-    width:10px; height:10px;
-    border-radius:50%;
+    width:9px; height:9px;
     display:inline-block;
   }
   .map-legend-note{
-    font-family:'Space Mono', monospace;
-    font-size:12px;
-    color:var(--ink-soft);
+    font-size:11px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--ink-faint);
   }
 </style>
 </head>
@@ -323,136 +290,80 @@
 
 <header class="top">
   <div class="masthead">
-    <div class="title">
-      <span class="the">Every Friday, in your inbox</span>
-      The Family Edit
+    <div>
+      <div class="eyebrow">Every Friday, In Your Inbox</div>
+      <div class="title">The Family Edit</div>
     </div>
-    <div class="dateline">SF BAY AREA · FAMILY EDITION<br>Fri Jul 31 – Sun Aug 2, 2026</div>
+    <div class="dateline">SF Bay Area<br>Fri Jul 31 – Sun Aug 2, 2026</div>
   </div>
-  <nav class="tabs">
-    <button class="tab-btn active" data-view="newsletter">Newsletter</button>
-    <button class="tab-btn" data-view="map">Map</button>
-  </nav>
 </header>
 
 <div class="shell">
+  <nav class="tabs">
+    <button class="tab-btn active" data-view="list">List</button>
+    <button class="tab-btn" data-view="map">Map</button>
+  </nav>
 
-  <!-- ================= NEWSLETTER VIEW ================= -->
-  <section id="view-newsletter" class="view active">
-    <div class="intro-card">
-      <p>Hi friends! This is a big one — a 52-year-old neighborhood tradition, a swing dance for the whole family, and a clown who's been making SF kids laugh since before we were born. Grab a stroller and let's go.</p>
-      <p>— the Edit</p>
-    </div>
-
-    <p class="section-label">Three to try</p>
-    <div class="three-try">
-      <div class="try-card">
+  <section id="view-list" class="view active">
+    <p class="section-label">Three to See</p>
+    <div class="three-see">
+      <div class="see-card">
         <div class="num">01</div>
         <h3><a href="https://www.nihonmachistreetfair.org/" target="_blank" rel="noopener">Nihonmachi Street Fair</a></h3>
-        <p>52 years running. Taiko drums, food stalls, a whole kids' zone — Japantown at its liveliest.</p>
+        <p>The 52nd annual is back, and it's a big one — Japantown at its liveliest.</p>
       </div>
-      <div class="try-card">
+      <div class="see-card">
         <div class="num">02</div>
-        <h3><a href="https://www.historysanjose.org/" target="_blank" rel="noopener">Spirit of '45 Swing Dance</a></h3>
-        <p>Living history + a real big-band dance floor. Twirl your toddler like it's 1945.</p>
+        <h3><a href="https://presidio.gov/explore/events/fiesta-en-el-parque-3" target="_blank" rel="noopener">Fiesta en el Parque</a></h3>
+        <p>A Latin culture celebration with dancing, food, and those Golden Gate views.</p>
       </div>
-      <div class="try-card">
+      <div class="see-card">
         <div class="num">03</div>
-        <h3><a href="https://www.chabotspace.org/" target="_blank" rel="noopener">Space Week Festival</a></h3>
-        <p>Two full days of rockets, telescopes, and scientists happy to answer "but why though."</p>
+        <h3><a href="https://chabotspace.org/programs/space-week/" target="_blank" rel="noopener">Space Week Festival</a></h3>
+        <p>The good kind of space exploration — astronaut talks and NASA exhibits.</p>
       </div>
     </div>
 
     <div id="region-blocks"></div>
 
-    <p class="demo-note">Every event above has been checked against its official source (venue site, city parks page, or festival page) for this exact weekend — not just an aggregator listing. Prices and times can still shift, so double-check before heading out. A couple of regions (Central, Southeast SF, Citywide/Regional) had nothing notable enough to include this week and were left off rather than padded with routine weekly stuff.</p>
+    <p class="demo-note">Every event above has been checked against its official source for this exact weekend. Prices and times can still shift, so double-check before heading out.</p>
   </section>
 
-  <!-- ================= MAP VIEW ================= -->
   <section id="view-map" class="view">
-    <p class="section-label">This weekend, on the map</p>
+    <p class="section-label">This Weekend, On The Map</p>
     <div id="map"></div>
     <div class="map-legend" id="mapLegend"></div>
-    <p class="map-legend-note">📍 11 spots · tap a pin for details · color = type of activity</p>
+    <p class="map-legend-note">19 Spots — Tap A Pin For Details</p>
   </section>
 
 </div>
 
 <script>
-/* ---------------- Event data ---------------- */
 const EVENTS = [
-  {
-    id:"nihonmachi", title:"Nihonmachi Street Fair", category:"Festivals & Fairs", region:"North", neighborhood:"Japantown, SF",
-    day:"Sat–Sun", date:"Aug 1–2", shortDate:"8/1 & 8/2", time:"11am–6pm", price:"Free",
-    desc:"The 52nd annual Japantown street fair — taiko drumming, food booths, art, and a dedicated kids' area.",
-    link:"https://www.nihonmachistreetfair.org/", lat:37.7853, lng:-122.4297
-  },
-  {
-    id:"renegade", title:"Renegade Craft Summer Fair", category:"Festivals & Fairs", region:"North", neighborhood:"Fort Mason Center, SF",
-    day:"Sat–Sun", date:"Aug 1–2", shortDate:"8/1 & 8/2", time:"11am–5pm", price:"Free (suggested $5 donation)",
-    desc:"250+ indie makers under the Festival Pavilion, with food trucks outside — browse while the kids run the lawn.",
-    link:"https://fortmason.org/event/renegade-craft-summer-2026/2026-08-01/", lat:37.8055, lng:-122.4310
-  },
-  {
-    id:"derique", title:"Unique Derique: Kids' Clown Show", category:"Performances & Shows", region:"Northeast", neighborhood:"Yerba Buena Gardens, SF",
-    day:"Fri", date:"Jul 31", shortDate:"7/31", time:"11am & 12pm", price:"Free",
-    desc:"A beloved SF clown institution, live in the Children's Garden — two short shows back to back.",
-    link:"https://ybgfestival.org/", lat:37.7847, lng:-122.4013
-  },
-  {
-    id:"dogdaysummer", title:"Dog Day of Summer: Family Film + Art Activity", category:"Science & Museums", region:"Northeast", neighborhood:"SFMOMA, SF",
-    day:"Sun", date:"Aug 2", shortDate:"8/2", time:"11am–3pm", price:"Free (RSVP for film; kids 18 & under free for activity)",
-    desc:"A free Snoopy double-feature with a Q&A, then a paper-folding art activity inspired by the world's favorite beagle.",
-    link:"https://www.sfmoma.org/event/dog-day-of-summer-family-film-screening-art-activity/", lat:37.7857, lng:-122.4011
-  },
-  {
-    id:"sterngrove", title:"Stern Grove Festival: Violent Femmes + Tune-Yards", category:"Music & Dance", region:"West", neighborhood:"Stern Grove, SF",
-    day:"Sun", date:"Aug 2", shortDate:"8/2", time:"Doors 12pm", price:"Free",
-    desc:"SF's 89-year-old free concert series in a eucalyptus-grove amphitheater — bring a picnic blanket, all ages welcome.",
-    link:"https://www.sterngrove.org/lineup2026", lat:37.7358, lng:-122.4839
-  },
-  {
-    id:"waterfrontflicks", title:"Waterfront Flicks: Maleficent", category:"Movie Nights", region:"East Bay", neighborhood:"Jack London Square, Oakland",
-    day:"Sat", date:"Aug 1", shortDate:"8/1", time:"Evening, gates before sunset", price:"Free",
-    desc:"Outdoor movie night on the Oakland waterfront — bring blankets, grab dinner from the square first.",
-    link:"https://www.jacklondonsquare.com/", lat:37.7955, lng:-122.2793
-  },
-  {
-    id:"spaceweek", title:"Space Week Festival", category:"Science & Museums", region:"East Bay", neighborhood:"Chabot Space & Science Center, Oakland",
-    day:"Sat–Sun", date:"Aug 1–2", shortDate:"8/1 & 8/2", time:"10am–5pm", price:"Ticketed — check venue",
-    desc:"Two days of space-themed programming, telescope viewing, and scientist meet-and-greets.",
-    link:"https://www.chabotspace.org/", lat:37.8188, lng:-122.1811
-  },
-  {
-    id:"fremont", title:"Fremont Festival of the Arts: Kid City", category:"Festivals & Fairs", region:"East Bay", neighborhood:"Downtown Fremont",
-    day:"Sat–Sun", date:"Aug 1–2", shortDate:"8/1 & 8/2", time:"10am–6pm", price:"Free entry",
-    desc:"Largest free street festival west of the Mississippi — Kid City brings carnival rides, crafts, and music just for the little ones.",
-    link:"https://fremontfestival.net/", lat:37.5485, lng:-121.9886
-  },
-  {
-    id:"spirit45", title:"Spirit of '45 Living History Day & Swing Dance", category:"Music & Dance", region:"South Bay", neighborhood:"History Park, San José",
-    day:"Sat", date:"Aug 1", shortDate:"8/1", time:"2pm–10pm", price:"Check site",
-    desc:"WWII-era living history plus a real big-band swing dance floor — a fun one to bring the whole family.",
-    link:"https://historysanjose.org/", lat:37.3255, lng:-121.8489
-  },
-  {
-    id:"pubinthepark", title:"Pub in the Park", category:"Festivals & Fairs", region:"Peninsula", neighborhood:"Red Morton Park, Redwood City",
-    day:"Sat", date:"Aug 1", shortDate:"8/1", time:"11am–4pm", price:"Free",
-    desc:"Redwood City's summer lawn party — live bluegrass, cornhole, food trucks, and an inflatable pub for the grown-ups.",
-    link:"https://www.redwoodcity.org/residents/redwood-city-events/pub-in-the-park-4124", lat:37.4761, lng:-122.2214
-  },
-  {
-    id:"maritimeday", title:"Maritime Day at Galilee Harbor", category:"Festivals & Fairs", region:"North Bay", neighborhood:"Galilee Harbor, Sausalito",
-    day:"Sat", date:"Aug 1", shortDate:"8/1", time:"10am–6pm", price:"Free",
-    desc:"Sausalito's working waterfront opens up for the day — boat rides, boatbuilding demos, live music, and a kids' zone.",
-    link:"https://www.galileeharbor.org/", lat:37.8590, lng:-122.4870
-  }
+  { id:"asianart", title:"Asian Art Museum Free First Sunday", category:"Science & Museums", region:"Central", neighborhood:"Civic Center, SF", day:"Sun", date:"Aug 2", shortDate:"8/2", time:"10am–5pm", price:"Free", tag:"Monthly", desc:"Free general admission — first Sunday of every month.", link:"https://calendar.asianart.org/", lat:37.7802, lng:-122.4163 },
+  { id:"precitaeyes", title:"Precita Eyes Mural Walk", category:"Performances & Shows", region:"Central", neighborhood:"Mission, SF", day:"Sat", date:"Aug 1", shortDate:"8/1", time:"Meet at 11am", price:"$25 / $15 / $10", tag:"Weekly", desc:"Guided walking tour of the Mission's murals.", link:"https://www.precitaeyes.org/tours.html", lat:37.7480, lng:-122.4173 },
+  { id:"pickleball", title:"Pickleball Tournament", category:"Sports & Watch Parties", region:"Southeast", neighborhood:"Thrive City, Chase Center, SF", day:"Fri–Sat", date:"Jul 31–Aug 1", shortDate:"7/31 & 8/1", time:"9am–7pm", price:"Free to watch", desc:"3rd annual tournament — nine courts, 200+ teams.", link:"https://chasecenter.com/events/", lat:37.7679, lng:-122.3874 },
+  { id:"jerryday", title:"Jerry Day", category:"Music & Dance", region:"Southeast", neighborhood:"McLaren Park, SF", day:"Sat", date:"Aug 1", shortDate:"8/1", time:"11:30am–5:45pm", price:"Free", desc:"Free all-day music festival celebrating Jerry Garcia.", link:"https://www.jerryday.org/", lat:37.7194, lng:-122.4230 },
+  { id:"derique", title:"Unique Derique: Kids' Clown Show", category:"Performances & Shows", region:"Northeast", neighborhood:"Yerba Buena Gardens, SF", day:"Fri", date:"Jul 31", shortDate:"7/31", time:"11–11:30am & 12–12:30pm", price:"Free", desc:"A beloved SF clown institution, live in the Children's Garden.", link:"https://ybgfestival.org/", lat:37.7847, lng:-122.4013 },
+  { id:"poetryworkshop", title:"Poetry Workshop w/ Nia Pearl", category:"Performances & Shows", region:"Northeast", neighborhood:"Yerba Buena Gardens, SF", day:"Sat", date:"Aug 1", shortDate:"8/1", time:"12–1pm", price:"Free", desc:"Community poetry workshop on the Great Lawn.", link:"https://ybgfestival.org/", lat:37.7845, lng:-122.4020 },
+  { id:"choreofest", title:"ChoreoFest Day Two", category:"Music & Dance", region:"Northeast", neighborhood:"Yerba Buena Gardens, SF", day:"Sat", date:"Aug 1", shortDate:"8/1", time:"2–4pm", price:"Free", desc:"Outdoor dance festival on the Great Lawn.", link:"https://ybgfestival.org/", lat:37.7845, lng:-122.4020 },
+  { id:"dogdaysummer", title:"Dog Day of Summer", category:"Movie Nights", region:"Northeast", neighborhood:"SFMOMA, SF", day:"Sun", date:"Aug 2", shortDate:"8/2", time:"11am–3pm", price:"Free (RSVP)", desc:"A Snoopy double-feature plus a paper-folding art activity.", link:"https://www.sfmoma.org/event/dog-day-of-summer-family-film-screening-art-activity/", lat:37.7857, lng:-122.4011 },
+  { id:"coloryourmind", title:"Color Your Mind", category:"Music & Dance", region:"Northeast", neighborhood:"Yerba Buena Gardens, SF", day:"Sun", date:"Aug 2", shortDate:"8/2", time:"12–5pm", price:"Free", desc:"Music gathering curated by Sameer Gupta.", link:"https://ybgfestival.org/", lat:37.7845, lng:-122.4020 },
+  { id:"nihonmachi", title:"Nihonmachi Street Fair", category:"Festivals & Fairs", region:"North", neighborhood:"Japantown, SF", day:"Sat–Sun", date:"Aug 1–2", shortDate:"8/1 & 8/2", time:"11am–6pm", price:"Free", desc:"The 52nd annual Japantown street fair.", link:"https://www.nihonmachistreetfair.org/", lat:37.7853, lng:-122.4297 },
+  { id:"fiestaparque", title:"Fiesta en el Parque", category:"Festivals & Fairs", region:"North", neighborhood:"Presidio Tunnel Tops, SF", day:"Sat", date:"Aug 1", shortDate:"8/1", time:"1–4pm", price:"Free", desc:"Latin culture celebration with dance classes and live performances.", link:"https://presidio.gov/explore/events/fiesta-en-el-parque-3", lat:37.7989, lng:-122.4662 },
+  { id:"beansprouts", title:"Bean Sprouts Family Days", category:"Science & Museums", region:"West", neighborhood:"SF Botanical Garden, Golden Gate Park", day:"Fri", date:"Jul 31", shortDate:"7/31", time:"10am–2pm", price:"Free (donation)", tag:"Ongoing", desc:"Hands-on garden activity stations for kids.", link:"https://gggp.org/event/bean-sprouts-family-days-76/2026-07-31/", lat:37.7663, lng:-122.4696 },
+  { id:"teagarden", title:"Japanese Tea Garden Free Admission Hour", category:"Science & Museums", region:"West", neighborhood:"Golden Gate Park, SF", day:"Fri", date:"Jul 31", shortDate:"7/31", time:"9–10am", price:"Free that hour", tag:"Weekly", desc:"Free entry every Friday morning.", link:"https://sfrecpark.org/", lat:37.7702, lng:-122.4700 },
+  { id:"spaceweek", title:"Space Week Festival", category:"Science & Museums", region:"East Bay", neighborhood:"Chabot Space & Science Center, Oakland", day:"Sat–Sun", date:"Aug 1–2", shortDate:"8/1 & 8/2", time:"Check site", price:"$24 / $19", desc:"Astronaut talks, NASA Artemis exhibits.", link:"https://chabotspace.org/programs/space-week/", lat:37.8188, lng:-122.1811 },
+  { id:"waterfrontflicks", title:"Waterfront Flicks: Maleficent", category:"Movie Nights", region:"East Bay", neighborhood:"Jack London Square, Oakland", day:"Sat", date:"Aug 1", shortDate:"8/1", time:"Starts 8:30pm", price:"Free", tag:"Weekly", desc:"Outdoor movie night on the Oakland waterfront.", link:"https://jacklondonsquare.com/events/jack-london-sq-waterfront-flicks", lat:37.7955, lng:-122.2793 },
+  { id:"calsailing", title:"Cal Sailing Open House", category:"Sports & Watch Parties", region:"East Bay", neighborhood:"Berkeley Marina", day:"Sun", date:"Aug 2", shortDate:"8/2", time:"1–3pm", price:"Free", desc:"Free 20-minute sail for the public.", link:"https://www.cal-sailing.org/", lat:37.8654, lng:-122.3117 },
+  { id:"summercampnight", title:"Summer Camp Night", category:"Festivals & Fairs", region:"South Bay", neighborhood:"Gilroy Gardens", day:"Fri–Sat", date:"Jul 31–Aug 1", shortDate:"7/31 & 8/1", time:"Overnight", price:"Ticketed", desc:"Dinner, movie, camp overnight, breakfast, full park day.", link:"https://www.gilroygardens.org/camp-nights/", lat:37.0058, lng:-121.5972 },
+  { id:"movienightssj", title:"Movie Nights in the Park", category:"Movie Nights", region:"South Bay", neighborhood:"San José", day:"Sat", date:"Aug 1", shortDate:"8/1", time:"Dusk", price:"Free", desc:"How to Train Your Dragon, free outdoor screening.", link:"https://www.sanjose.org/events/movie-nights-park", lat:37.3327, lng:-121.8890 },
+  { id:"numu", title:"Free First Sundays at NUMU", category:"Science & Museums", region:"South Bay", neighborhood:"Los Gatos", day:"Sun", date:"Aug 2", shortDate:"8/2", time:"Regular hours", price:"Free", tag:"Monthly", desc:"Free admission, first Sunday of every month.", link:"https://www.numulosgatos.org/first-free-sundays", lat:37.2266, lng:-121.9747 }
 ];
 
-const REGION_ORDER = ["Central","Southeast","Northeast","North","West","East Bay","Peninsula","South Bay","North Bay","Bay Area/Regional","Citywide/Regional"];
+const REGION_ORDER = ["Central","Southeast","Northeast","North","West","East Bay","Peninsula","South Bay","North Bay"];
 const SF_REGIONS = new Set(["Central","Southeast","Northeast","North","West"]);
 
-/* ---------------- Tabs ---------------- */
 document.querySelectorAll(".tab-btn").forEach(btn=>{
   btn.addEventListener("click", ()=>{
     document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
@@ -463,7 +374,6 @@ document.querySelectorAll(".tab-btn").forEach(btn=>{
   });
 });
 
-/* ---------------- Render newsletter regions ---------------- */
 function renderRegions(){
   const container = document.getElementById("region-blocks");
   const byRegion = {};
@@ -473,36 +383,39 @@ function renderRegions(){
     const block = document.createElement("div");
     block.className = "region-block";
     const sfLabel = SF_REGIONS.has(region) ? `<span class="sf-label">San Francisco</span>` : '';
-    block.innerHTML = `<h3 class="region-title">${region}${sfLabel} <span class="tag">${byRegion[region].length} event${byRegion[region].length>1?'s':''}</span></h3>`;
+    const left = document.createElement("div");
+    left.className = "region-title-col";
+    left.innerHTML = `<h3 class="region-title">${region}${sfLabel}</h3><span class="region-count">${byRegion[region].length} Event${byRegion[region].length>1?'s':''}</span>`;
+    const right = document.createElement("div");
     byRegion[region].forEach(e=>{
       const row = document.createElement("div");
       row.className = "event-row";
       row.innerHTML = `
-        <div class="event-stamp">${e.day}<br>${e.shortDate.replace(' & ', '<br>& ')}</div>
         <div class="event-body">
-          <h4><a href="${e.link}" target="_blank" rel="noopener">${e.title}</a></h4>
+          <h4><a href="${e.link}" target="_blank" rel="noopener">${e.title}</a></h4>${e.tag ? `<span class="event-tag ${e.tag.toLowerCase()}">${e.tag}</span>` : ''}
           <p class="event-desc">${e.desc}</p>
           <div class="event-meta">
-            <span>🕐 ${e.day}, ${e.time}</span>
-            <span>📍 ${e.neighborhood}</span>
-            <span>💰 ${e.price}</span>
+            <span><span class="k">When</span>${e.day}, ${e.time}</span>
+            <span><span class="k">Where</span>${e.neighborhood}</span>
+            <span><span class="k">Cost</span>${e.price}</span>
           </div>
         </div>`;
-      block.appendChild(row);
+      right.appendChild(row);
     });
+    block.appendChild(left);
+    block.appendChild(right);
     container.appendChild(block);
   });
 }
 renderRegions();
 
-/* ---------------- Map ---------------- */
 const categoryColors = {
-  "Festivals & Fairs":"#FF6B6B",
-  "Movie Nights":"#00B5A6",
-  "Performances & Shows":"#FFD93D",
-  "Science & Museums":"#A3D900",
-  "Music & Dance":"#FFB3C1",
-  "Sports & Watch Parties":"#BEE6FA"
+  "Festivals & Fairs":"#E8380D",
+  "Movie Nights":"#6A2FD1",
+  "Performances & Shows":"#E8A400",
+  "Science & Museums":"#00A19B",
+  "Music & Dance":"#D6127A",
+  "Sports & Watch Parties":"#1257D6"
 };
 const map = L.map('map', {scrollWheelZoom:false}).setView([37.72,-122.15], 10);
 window._leafletMap = map;
@@ -511,14 +424,13 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
 }).addTo(map);
 
 EVENTS.forEach(e=>{
-  const color = categoryColors[e.category] || "#6C4AB6";
+  const color = categoryColors[e.category] || "#17140F";
   const marker = L.circleMarker([e.lat,e.lng], {
-    radius:9, color:"#fff", weight:2, fillColor:color, fillOpacity:0.95
+    radius:8, color:"#FFFFFF", weight:2.5, fillColor:color, fillOpacity:1
   }).addTo(map);
-  marker.bindPopup(`<b>${e.title}</b><br><span style="color:${color}; font-weight:600;">${e.category}</span><br>${e.day}, ${e.date} · ${e.time}<br>${e.neighborhood}<br>💰 ${e.price}<br><a href="${e.link}" target="_blank" rel="noopener">Event page →</a>`);
+  marker.bindPopup(`<b>${e.title}</b><br><span style="color:${color}; font-weight:700;">${e.category}</span><br>${e.day}, ${e.date} · ${e.time}<br>${e.neighborhood}<br>${e.price}<br><a href="${e.link}" target="_blank" rel="noopener">Event page →</a>`);
 });
 
-/* Legend */
 const legendEl = document.getElementById("mapLegend");
 legendEl.innerHTML = Object.entries(categoryColors).map(([cat,color])=>
   `<span class="legend-chip"><i style="background:${color}"></i>${cat}</span>`
