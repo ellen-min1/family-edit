@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE FAMILY EDIT — BAY AREA FAMILY EVENTS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Archivo+Expanded:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root{
+    --paper:#FFFFFF;
+    --ink:#17140F;
+    --ink-soft:#6B655C;
+    --ink-faint:#A29C90;
+    --accent:#3D4A34;
+    --accent-pale:#EEF0E9;
+    --line:#E5E2DC;
+
+    /* muted tag tokens — quieter than the map on purpose */
+    --tag-ongoing-bg:#E8EDE2;
+    --tag-ongoing-ink:#4F6238;
+    --tag-monthly-bg:#EDE6EE;
+    --tag-monthly-ink:#6F4A70;
+    --tag-weekly-bg:#E4EAF1;
+    --tag-weekly-ink:#415B80;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Archivo', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    font-size:14.5px;
+  }
+  a{color:var(--ink);}
+
+  .shell{max-width:960px;margin:0 auto;padding:0 32px 140px;}
+  header.top{
+    padding:44px 32px 0;
+    max-width:960px;
+    margin:0 auto;
+    border-bottom:1px solid var(--ink);
+    padding-bottom:24px;
+  }
+  .masthead{
+    display:grid;
+    grid-template-columns:1fr auto;
+    align-items:end;
+    gap:20px;
+  }
+  .masthead .eyebrow{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:10px;
+  }
+  .masthead .title{
+    font-family:'Archivo Expanded', sans-serif;
+    font-weight:800;
+    font-size:34px;
+    letter-spacing:-0.01em;
+    text-transform:uppercase;
+    line-height:0.95;
+  }
+  .masthead .dateline{
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    text-align:right;
+    line-height:1.6;
+  }
+
+  nav.tabs{
+    display:flex;
+    gap:0;
+    margin:0 0 56px;
+  }
+  nav.tabs button{
+    font-family:'Archivo', sans-serif;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    background:transparent;
+    border:none;
+    border-right:1px solid var(--line);
+    color:var(--ink-faint);
+    padding:16px 24px 16px 0;
+    margin-right:24px;
+    cursor:pointer;
+    transition:color .15s ease;
+  }
+  nav.tabs button:last-child{ border-right:none; }
+  nav.tabs button:hover{ color:var(--ink); }
+  nav.tabs button.active{ color:var(--accent); }
+
+  .view{display:none;}
+  .view.active{display:block; animation:fade .3s ease;}
+  @keyframes fade{from{opacity:0;} to{opacity:1;}}
+
+  .section-label{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--ink);
+    margin:0 0 24px;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--ink);
+  }
+
+  /* ---------- Three to see ---------- */
+  .three-see{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:0;
+    margin-bottom:72px;
+    border:1px solid var(--line);
+  }
+  @media (max-width:760px){ .three-see{grid-template-columns:1fr;} }
+  .see-card{
+    padding:28px 24px;
+    border-right:1px solid var(--line);
+  }
+  .see-card:last-child{ border-right:none; }
+  .see-card .num{
+    font-family:'Archivo Expanded', sans-serif;
+    font-weight:800;
+    font-size:12px;
+    color:var(--accent);
+    margin-bottom:16px;
+    letter-spacing:0.05em;
+  }
+  .see-card h3{
+    font-size:19px;
+    font-weight:700;
+    margin:0 0 10px;
+    line-height:1.25;
+  }
+  .see-card h3 a{color:var(--ink); text-decoration:none;}
+  .see-card h3 a:hover{color:var(--accent);}
+  .see-card p{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin:0;
+    line-height:1.55;
+  }
+
+  /* ---------- Region blocks ---------- */
+  .region-block{
+    display:grid;
+    grid-template-columns:180px 1fr;
+    gap:24px;
+    margin-bottom:0;
+    border-top:1px solid var(--ink);
+    padding:28px 0;
+  }
+  @media (max-width:640px){ .region-block{grid-template-columns:1fr;} }
+  .region-title-col{ }
+  .region-title{
+    font-family:'Archivo Expanded', sans-serif;
+    font-weight:800;
+    font-size:16px;
+    text-transform:uppercase;
+    letter-spacing:-0.005em;
+    margin:0 0 4px;
+    color:var(--ink);
+  }
+  .region-title .sf-label{
+    display:block;
+    font-family:'Archivo', sans-serif;
+    font-size:10px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--ink-faint);
+    margin-top:4px;
+  }
+  .region-count{
+    font-size:11px;
+    font-weight:600;
+    color:var(--accent);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+  }
+
+  .event-row{
+    padding:16px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .event-row:last-child{ border-bottom:none; padding-bottom:0; }
+  .event-row:first-child{ padding-top:0; }
+  .event-body h4{
+    margin:0 0 6px;
+    font-size:15.5px;
+    font-weight:700;
+    display:inline;
+  }
+  .event-body h4 a{text-decoration:none; color:var(--ink);}
+  .event-body h4 a:hover{color:var(--accent);}
+  .event-tag{
+    display:inline-block;
+    font-size:9px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    padding:2px 7px;
+    margin-left:8px;
+    vertical-align:middle;
+    /* fallback */
+    color:var(--tag-ongoing-ink);
+    background:var(--tag-ongoing-bg);
+  }
+  .event-tag.ongoing{ color:var(--tag-ongoing-ink); background:var(--tag-ongoing-bg); }
+  .event-tag.monthly{ color:var(--tag-monthly-ink); background:var(--tag-monthly-bg); }
+  .event-tag.weekly{  color:var(--tag-weekly-ink);  background:var(--tag-weekly-bg); }
+  .event-desc{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin:6px 0 8px;
+    line-height:1.5;
+  }
+  .event-meta{
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    display:flex;
+    flex-wrap:wrap;
+    gap:2px 20px;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+  }
+  .event-meta .k{ color:var(--ink-faint); font-weight:700; margin-right:4px; }
+
+  .demo-note{
+    margin-top:48px;
+    font-size:12px;
+    color:var(--ink-faint);
+    padding-top:20px;
+    border-top:1px solid var(--ink);
+    line-height:1.6;
+  }
+
+  /* ---------- Map ---------- */
+  #map{
+    height:480px;
+    border:1px solid var(--ink);
+    margin-bottom:16px;
+    filter:grayscale(0.55) contrast(1.03);
+  }
+  .leaflet-popup-content{font-family:'Archivo', sans-serif; font-size:13px;}
+  .leaflet-popup-content b{font-weight:800; font-size:14px;}
+  .map-legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px 20px;
+    margin-bottom:10px;
+  }
+  .legend-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:10.5px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--ink-soft);
+  }
+  .legend-chip i{
+    width:9px; height:9px;
+    display:inline-block;
+  }
+  .map-legend-note{
+    font-size:11px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--ink-faint);
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">Local Events For Your Family & Friends</div>
+      <div class="title">The Family Edit</div>
+    </div>
+    <div class="dateline">SF Bay Area<br>Fri Aug 7 – Sun Aug 9, 2026</div>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="tabs">
+    <button class="tab-btn active" data-view="list">List</button>
+    <button class="tab-btn" data-view="map">Map</button>
+  </nav>
+
+  <section id="view-list" class="view active">
+    <p class="section-label">Three to See</p>
+    <div class="three-see">
+      <div class="see-card">
+        <div class="num">01</div>
+        <h3><a href="https://ybgfestival.org/event/pistahan-080926/" target="_blank" rel="noopener">Pistahan Parade & Festival</a></h3>
+        <p>The largest Filipino parade on the West Coast, plus two full days of food, music, and culture.</p>
+      </div>
+      <div class="see-card">
+        <div class="num">02</div>
+        <h3><a href="https://fortmason.org/series/san-francisco-aerial-arts-festival-2026/" target="_blank" rel="noopener">San Francisco Aerial Arts Festival</a></h3>
+        <p>Gravity-defying circus and aerial dance, three days running at Fort Mason.</p>
+      </div>
+      <div class="see-card">
+        <div class="num">03</div>
+        <h3><a href="https://www.eventbrite.com/e/live-on-larkin-tickets-1989346463825" target="_blank" rel="noopener">Live On Larkin: Back to School Edition</a></h3>
+        <p>A special back-to-school street fest in the Tenderloin — live music, games, and vendors.</p>
+      </div>
+    </div>
+
+    <div id="region-blocks"></div>
+
+    <p class="demo-note">Every event above has been checked against its official source for this exact weekend. Prices and times can still shift, so double-check before heading out.</p>
+  </section>
+
+  <section id="view-map" class="view">
+    <p class="section-label">This Weekend, On The Map</p>
+    <div id="map"></div>
+    <div class="map-legend" id="mapLegend"></div>
+    <p class="map-legend-note">17 Spots — Tap A Pin For Details</p>
+  </section>
+
+</div>
+
+<script>
+const EVENTS = [
+  // ---- CENTRAL ----
+  { id:"beautybeast", startMin:1170, title:"Disney's Beauty and the Beast", category:"Performances & Shows", region:"Central", neighborhood:"Orpheum Theatre, Civic Center, SF", day:"Fri–Sun", date:"Aug 7–9", shortDate:"8/7–8/9", time:"Check site for exact showtimes", price:"From ~$86; $40 rush tickets", tag:"Ongoing", desc:"Touring Broadway musical, recommended ages 6+. Final weekend of the SF engagement.", link:"https://www.san-francisco-theater.com/shows/orpheum-theater/disneys-beauty-and-the-beast", lat:37.7807, lng:-122.4111 },
+  { id:"liveonlarkin", startMin:720, title:"Live On Larkin: Back to School Edition", category:"Festivals & Fairs", region:"Central", neighborhood:"Larkin St (Ellis & Eddy), Tenderloin, SF", day:"Sat", date:"Aug 8", shortDate:"8/8", time:"12–5pm", price:"Free", tag:"Monthly", desc:"Free street fest with live music, performances, games, and vendors — 2nd Saturdays.", link:"https://www.eventbrite.com/e/live-on-larkin-tickets-1989346463825", lat:37.7839, lng:-122.4152 },
+  // ---- NORTHEAST ----
+  { id:"eddiemadril", startMin:660, title:"Eddie Madril: Kids' Show", category:"Performances & Shows", region:"Northeast", neighborhood:"Yerba Buena Gardens Children's Garden, SF", day:"Fri", date:"Aug 7", shortDate:"8/7", time:"11–11:30am", price:"Free", desc:"Free family performance in the Children's Garden.", link:"https://ybgfestival.org/", lat:37.7847, lng:-122.4013 },
+  { id:"pistahan", startMin:660, title:"Pistahan Parade & Festival", category:"Festivals & Fairs", region:"Northeast", neighborhood:"Yerba Buena Gardens, SF", day:"Sat–Sun", date:"Aug 8–9", shortDate:"8/8 & 8/9", time:"11am–5pm (parade 11am–noon Sat)", price:"Free", desc:"The largest Filipino parade on the West Coast, plus two days of cultural pavilions, food, music, and dance.", link:"https://ybgfestival.org/event/pistahan-080926/", lat:37.7845, lng:-122.4020 },
+  // ---- NORTH ----
+  { id:"aerialarts", startMin:975, title:"San Francisco Aerial Arts Festival", category:"Performances & Shows", region:"North", neighborhood:"Fort Mason Center, SF", day:"Fri–Sun", date:"Aug 7–9", shortDate:"8/7–8/9", time:"Fri 6:15–10pm, Sat 12–10pm, Sun 11am", price:"$15+", desc:"7th biennial showcase of aerial dance and circus arts — 15 choreographers, 6 youth companies.", link:"https://fortmason.org/series/san-francisco-aerial-arts-festival-2026/", lat:37.8060, lng:-122.4310 },
+  // ---- WEST ----
+  { id:"teagarden", startMin:540, title:"Japanese Tea Garden Free Admission Hour", category:"Science & Museums", region:"West", neighborhood:"Golden Gate Park, SF", day:"Fri", date:"Aug 7", shortDate:"8/7", time:"9–10am", price:"Free that hour", tag:"Weekly", desc:"Free entry every Friday morning.", link:"https://sfrecpark.org/", lat:37.7702, lng:-122.4700 },
+  { id:"zoosunset", startMin:1020, title:"SF Zoo Sunset Fridays", category:"Science & Museums", region:"West", neighborhood:"San Francisco Zoo", day:"Fri", date:"Aug 7", shortDate:"8/7", time:"5–7pm", price:"Included with zoo admission (free for SF residents)", tag:"Weekly", desc:"Animal encounters, live music, extended evening hours.", link:"https://www.sfzoo.org/", lat:37.7325, lng:-122.5032 },
+  // ---- EAST BAY ----
+  { id:"omcafriday", startMin:300, title:"Friday Nights at OMCA", category:"Festivals & Fairs", region:"East Bay", neighborhood:"Oakland Museum of California", day:"Fri", date:"Aug 7", shortDate:"8/7", time:"5–9pm", price:"Free to enter grounds; regular admission for galleries", tag:"Weekly", desc:"Block party with live music, DJs, and activities.", link:"https://museumca.org/", lat:37.7994, lng:-122.2586 },
+  { id:"mariogalaxy", startMin:1200, title:"Movies in the Park: Super Mario Galaxy", category:"Movie Nights", region:"East Bay", neighborhood:"Berkeley", day:"Fri", date:"Aug 7", shortDate:"8/7", time:"Starts at dusk", price:"Free", desc:"Free outdoor movie night.", link:"https://berkeleyca.gov/community-recreation/events/movies-park-super-mario-galaxy-movie", lat:37.8695, lng:-122.2730 },
+  // ---- PENINSULA ----
+  { id:"sanmateohistory", startMin:600, title:"Free First Friday at the San Mateo County History Museum", category:"Science & Museums", region:"Peninsula", neighborhood:"Redwood City", day:"Fri", date:"Aug 7", shortDate:"8/7", time:"10am–4pm", price:"Free", tag:"Monthly", desc:"Free admission to the historic 1910 County Courthouse — stained glass dome, mosaic tile floor.", link:"https://historysmc.org/", lat:37.4852, lng:-122.2364 },
+  { id:"alohafest", startMin:600, title:"Bay Area Aloha Festival", category:"Festivals & Fairs", region:"Peninsula", neighborhood:"San Mateo County Event Center", day:"Sat–Sun", date:"Aug 8–9", shortDate:"8/8 & 8/9", time:"10am–5pm", price:"$5 (kids 12 & under free)", desc:"31st annual — two-day Pacific Islander culture celebration: hula, Polynesian dance, Hawaiian and Tahitian music, food, crafts, kids' activities.", link:"https://www.pica-org.org/", lat:37.5485, lng:-122.2975 },
+  // ---- SOUTH BAY ----
+  { id:"goatmovie", startMin:1200, title:"Movies in the Park: GOAT", category:"Movie Nights", region:"South Bay", neighborhood:"Cupertino", day:"Fri", date:"Aug 7", shortDate:"8/7", time:"Starts at dusk", price:"Free", desc:"Free outdoor movie night.", link:"https://www.cupertino.gov/Parks-Recreation/Events/Movies-in-the-Park", lat:37.3229, lng:-122.0322 },
+  { id:"badguys2", startMin:1200, title:"Movie Night: The Bad Guys 2", category:"Movie Nights", region:"South Bay", neighborhood:"Saratoga", day:"Fri", date:"Aug 7", shortDate:"8/7", time:"Starts at dusk", price:"Free", desc:"Free outdoor movie night.", link:"https://www.saratoga.ca.us/CivicAlerts.aspx?AID=214", lat:37.2638, lng:-122.0230 },
+  { id:"stembubble", startMin:960, title:"Free STEM Play + Bubble Day", category:"Science & Museums", region:"South Bay", neighborhood:"The Village at San Antonio Center, Mountain View", day:"Sat", date:"Aug 8", shortDate:"8/8", time:"4–6pm", price:"Free", tag:"Monthly", desc:"Hands-on STEM activities, live DJ, giant bubble artist — 2nd Saturdays.", link:"https://www.eventbrite.com/e/stem-play-bubble-day-tickets-1989067613777", lat:37.4043, lng:-122.1075 },
+  // ---- NORTH BAY ----
+  { id:"sonomafair", startMin:600, title:"Sonoma County Fair", category:"Festivals & Fairs", region:"North Bay", neighborhood:"Santa Rosa Fairgrounds", day:"Fri–Sun", date:"Aug 7–9", shortDate:"8/7–8/9", time:"10am–10pm", price:"Check site for pricing", desc:"Carnival rides, animals, concerts.", link:"https://sonomacountyfair.com/pages/tickets", lat:38.4404, lng:-122.7141 },
+  { id:"mcnearsbeach", startMin:600, title:"McNears Beach", category:"Sports & Watch Parties", region:"North Bay", neighborhood:"San Rafael", day:"Fri–Sun", date:"Aug 7–9", shortDate:"8/7–8/9", time:"Pool hours 10am–6pm", price:"Free entrance", desc:"Swim, picnic, and play.", link:"https://www.marinmommies.com/marin-bay-area-weekend-family-fun-august-7%E2%80%939", lat:37.9989, lng:-122.4593 },
+  { id:"gravensteinfair", startMin:600, title:"Gravenstein Apple Fair", category:"Festivals & Fairs", region:"North Bay", neighborhood:"Ragle Ranch Regional Park, Sebastopol", day:"Sat–Sun", date:"Aug 8–9", shortDate:"8/8 & 8/9", time:"10am–6pm", price:"Check site for pricing", desc:"53rd annual — apple-themed food and crafts, live music.", link:"https://gravensteinapplefair.com/", lat:38.4021, lng:-122.8267 }
+];
+
+const REGION_ORDER = ["Central","Southeast","Northeast","North","West","East Bay","Peninsula","South Bay","North Bay"];
+const SF_REGIONS = new Set(["Central","Southeast","Northeast","North","West"]);
+
+/* ---- Ordering ----
+   Strictly chronological within each region:
+   1. day:   Friday  →  Saturday  →  Sunday   (multi-day events sort by first day)
+   2. time:  earliest start first
+   Tags (Ongoing/Monthly/Weekly) are informational only and do not affect order. */
+const DAY_RANK = { "fri":0, "sat":1, "sun":2 };
+
+function dayRank(day){
+  const first = day.toLowerCase().slice(0,3);
+  return DAY_RANK[first] !== undefined ? DAY_RANK[first] : 9;
+}
+function sortEvents(list){
+  return list.slice().sort((a,b)=>
+    dayRank(a.day) - dayRank(b.day) ||
+    (a.startMin ?? 9999) - (b.startMin ?? 9999)
+  );
+}
+
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("view-"+btn.dataset.view).classList.add("active");
+    if(btn.dataset.view==="map"){ setTimeout(()=>{ if(window._leafletMap) window._leafletMap.invalidateSize(); },50); }
+  });
+});
+
+function renderRegions(){
+  const container = document.getElementById("region-blocks");
+  const byRegion = {};
+  EVENTS.forEach(e=>{ (byRegion[e.region] = byRegion[e.region]||[]).push(e); });
+
+  REGION_ORDER.filter(r=>byRegion[r]).forEach(region=>{
+    const block = document.createElement("div");
+    block.className = "region-block";
+    const sfLabel = SF_REGIONS.has(region) ? `<span class="sf-label">San Francisco</span>` : '';
+    const left = document.createElement("div");
+    left.className = "region-title-col";
+    left.innerHTML = `<h3 class="region-title">${region}${sfLabel}</h3><span class="region-count">${byRegion[region].length} Event${byRegion[region].length>1?'s':''}</span>`;
+    const right = document.createElement("div");
+    sortEvents(byRegion[region]).forEach(e=>{
+      const row = document.createElement("div");
+      row.className = "event-row";
+      row.innerHTML = `
+        <div class="event-body">
+          <h4><a href="${e.link}" target="_blank" rel="noopener">${e.title}</a></h4>${e.tag ? `<span class="event-tag ${e.tag.toLowerCase()}">${e.tag}</span>` : ''}
+          <p class="event-desc">${e.desc}</p>
+          <div class="event-meta">
+            <span><span class="k">When</span>${e.day}, ${e.time}</span>
+            <span><span class="k">Where</span>${e.neighborhood}</span>
+            <span><span class="k">Cost</span>${e.price}</span>
+          </div>
+        </div>`;
+      right.appendChild(row);
+    });
+    block.appendChild(left);
+    block.appendChild(right);
+    container.appendChild(block);
+  });
+}
+renderRegions();
+
+const categoryColors = {
+  "Festivals & Fairs":"#E8380D",
+  "Movie Nights":"#6A2FD1",
+  "Performances & Shows":"#E8A400",
+  "Science & Museums":"#00A19B",
+  "Music & Dance":"#D6127A",
+  "Sports & Watch Parties":"#1257D6"
+};
+const map = L.map('map', {scrollWheelZoom:false}).setView([37.72,-122.15], 10);
+window._leafletMap = map;
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution:'&copy; OpenStreetMap &copy; CARTO', maxZoom:19
+}).addTo(map);
+
+EVENTS.forEach(e=>{
+  const color = categoryColors[e.category] || "#17140F";
+  const marker = L.circleMarker([e.lat,e.lng], {
+    radius:8, color:"#FFFFFF", weight:2.5, fillColor:color, fillOpacity:1
+  }).addTo(map);
+  marker.bindPopup(`<b>${e.title}</b><br><span style="color:${color}; font-weight:700;">${e.category}</span><br>${e.day}, ${e.date} · ${e.time}<br>${e.neighborhood}<br>${e.price}<br><a href="${e.link}" target="_blank" rel="noopener">Event page →</a>`);
+});
+
+const legendEl = document.getElementById("mapLegend");
+legendEl.innerHTML = Object.entries(categoryColors).map(([cat,color])=>
+  `<span class="legend-chip"><i style="background:${color}"></i>${cat}</span>`
+).join("");
+</script>
+
+</body>
+</html>
