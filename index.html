@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE FAMILY EDIT — BAY AREA FAMILY EVENTS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Archivo+Expanded:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root{
+    --paper:#FFFFFF;
+    --ink:#17140F;
+    --ink-soft:#6B655C;
+    --ink-faint:#A29C90;
+    --accent:#3D4A34;
+    --accent-pale:#EEF0E9;
+    --line:#E5E2DC;
+
+    /* muted tag tokens — quieter than the map on purpose */
+    --tag-ongoing-bg:#E8EDE2;
+    --tag-ongoing-ink:#4F6238;
+    --tag-monthly-bg:#EDE6EE;
+    --tag-monthly-ink:#6F4A70;
+    --tag-weekly-bg:#E4EAF1;
+    --tag-weekly-ink:#415B80;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Archivo', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    font-size:14.5px;
+  }
+  a{color:var(--ink);}
+
+  .shell{max-width:960px;margin:0 auto;padding:0 32px 140px;}
+  header.top{
+    padding:44px 32px 0;
+    max-width:960px;
+    margin:0 auto;
+    border-bottom:1px solid var(--ink);
+    padding-bottom:24px;
+  }
+  .masthead{
+    display:grid;
+    grid-template-columns:1fr auto;
+    align-items:end;
+    gap:20px;
+  }
+  .masthead .eyebrow{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:10px;
+  }
+  .masthead .title{
+    font-family:'Archivo Expanded', sans-serif;
+    font-weight:800;
+    font-size:34px;
+    letter-spacing:-0.01em;
+    text-transform:uppercase;
+    line-height:0.95;
+  }
+  .masthead .dateline{
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    text-align:right;
+    line-height:1.6;
+  }
+
+  nav.tabs{
+    display:flex;
+    gap:0;
+    margin:0 0 56px;
+  }
+  nav.tabs button{
+    font-family:'Archivo', sans-serif;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    background:transparent;
+    border:none;
+    border-right:1px solid var(--line);
+    color:var(--ink-faint);
+    padding:16px 24px 16px 0;
+    margin-right:24px;
+    cursor:pointer;
+    transition:color .15s ease;
+  }
+  nav.tabs button:last-child{ border-right:none; }
+  nav.tabs button:hover{ color:var(--ink); }
+  nav.tabs button.active{ color:var(--accent); }
+
+  .view{display:none;}
+  .view.active{display:block; animation:fade .3s ease;}
+  @keyframes fade{from{opacity:0;} to{opacity:1;}}
+
+  .section-label{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--ink);
+    margin:0 0 24px;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--ink);
+  }
+
+  /* ---------- Three to see ---------- */
+  .three-see{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:0;
+    margin-bottom:72px;
+    border:1px solid var(--line);
+  }
+  @media (max-width:760px){ .three-see{grid-template-columns:1fr;} }
+  .see-card{
+    padding:28px 24px;
+    border-right:1px solid var(--line);
+  }
+  .see-card:last-child{ border-right:none; }
+  .see-card .num{
+    font-family:'Archivo Expanded', sans-serif;
+    font-weight:800;
+    font-size:12px;
+    color:var(--accent);
+    margin-bottom:16px;
+    letter-spacing:0.05em;
+  }
+  .see-card h3{
+    font-size:19px;
+    font-weight:700;
+    margin:0 0 10px;
+    line-height:1.25;
+  }
+  .see-card h3 a{color:var(--ink); text-decoration:none;}
+  .see-card h3 a:hover{color:var(--accent);}
+  .see-card p{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin:0;
+    line-height:1.55;
+  }
+
+  /* ---------- Empty state (between prep runs) ---------- */
+  .empty-state{
+    border:1px solid var(--line);
+    padding:40px 32px;
+    margin-bottom:72px;
+    text-align:center;
+  }
+  .empty-state p{
+    font-size:14px;
+    color:var(--ink-soft);
+    margin:0;
+    line-height:1.6;
+  }
+  .empty-state p.lead{
+    font-family:'Archivo Expanded', sans-serif;
+    font-weight:800;
+    font-size:16px;
+    color:var(--ink);
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+    margin:0 0 8px;
+  }
+
+  /* ---------- Region blocks ---------- */
+  .region-block{
+    display:grid;
+    grid-template-columns:180px 1fr;
+    gap:24px;
+    margin-bottom:0;
+    border-top:1px solid var(--ink);
+    padding:28px 0;
+  }
+  @media (max-width:640px){ .region-block{grid-template-columns:1fr;} }
+  .region-title-col{ }
+  .region-title{
+    font-family:'Archivo Expanded', sans-serif;
+    font-weight:800;
+    font-size:16px;
+    text-transform:uppercase;
+    letter-spacing:-0.005em;
+    margin:0 0 4px;
+    color:var(--ink);
+  }
+  .region-title .sf-label{
+    display:block;
+    font-family:'Archivo', sans-serif;
+    font-size:10px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--ink-faint);
+    margin-top:4px;
+  }
+  .region-count{
+    font-size:11px;
+    font-weight:600;
+    color:var(--accent);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+  }
+
+  .event-row{
+    padding:16px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .event-row:last-child{ border-bottom:none; padding-bottom:0; }
+  .event-row:first-child{ padding-top:0; }
+  .event-body h4{
+    margin:0 0 6px;
+    font-size:15.5px;
+    font-weight:700;
+    display:inline;
+  }
+  .event-body h4 a{text-decoration:none; color:var(--ink);}
+  .event-body h4 a:hover{color:var(--accent);}
+  .event-tag{
+    display:inline-block;
+    font-size:9px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    padding:2px 7px;
+    margin-left:8px;
+    vertical-align:middle;
+    /* fallback */
+    color:var(--tag-ongoing-ink);
+    background:var(--tag-ongoing-bg);
+  }
+  .event-tag.ongoing{ color:var(--tag-ongoing-ink); background:var(--tag-ongoing-bg); }
+  .event-tag.monthly{ color:var(--tag-monthly-ink); background:var(--tag-monthly-bg); }
+  .event-tag.weekly{  color:var(--tag-weekly-ink);  background:var(--tag-weekly-bg); }
+  .event-desc{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin:6px 0 8px;
+    line-height:1.5;
+  }
+  .event-meta{
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    display:flex;
+    flex-wrap:wrap;
+    gap:2px 20px;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+  }
+  .event-meta .k{ color:var(--ink-faint); font-weight:700; margin-right:4px; }
+
+  .demo-note{
+    margin-top:48px;
+    font-size:12px;
+    color:var(--ink-faint);
+    padding-top:20px;
+    border-top:1px solid var(--ink);
+    line-height:1.6;
+  }
+
+  /* ---------- Map ---------- */
+  #map{
+    height:480px;
+    border:1px solid var(--ink);
+    margin-bottom:16px;
+    filter:grayscale(0.55) contrast(1.03);
+  }
+  .leaflet-popup-content{font-family:'Archivo', sans-serif; font-size:13px;}
+  .leaflet-popup-content b{font-weight:800; font-size:14px;}
+  .map-legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px 20px;
+    margin-bottom:10px;
+  }
+  .legend-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:10.5px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--ink-soft);
+  }
+  .legend-chip i{
+    width:9px; height:9px;
+    display:inline-block;
+  }
+  .map-legend-note{
+    font-size:11px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--ink-faint);
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">Local Events For Your Family & Friends</div>
+      <div class="title">The Family Edit</div>
+    </div>
+    <div class="dateline">SF Bay Area<br>Fri Aug 21 – Sun Aug 23, 2026</div>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="tabs">
+    <button class="tab-btn active" data-view="list">List</button>
+    <button class="tab-btn" data-view="map">Map</button>
+  </nav>
+
+  <section id="view-list" class="view active">
+    <p class="section-label">Three to See</p>
+    <div class="three-see">
+      <div class="see-card">
+        <div class="num">01</div>
+        <h3><a href="https://sundaystreetssf.com/sunday-streets-bayview-2026/" target="_blank" rel="noopener">Sunday Streets Bayview</a></h3>
+        <p>Blocks of Bayview go car-free for one afternoon — a kids zone, live music, and pavement made for dancing.</p>
+      </div>
+      <div class="see-card">
+        <div class="num">02</div>
+        <h3><a href="https://sunsetdunes.org/events" target="_blank" rel="noopener">Welcome Back Plover Party</a></h3>
+        <p>Ocean Beach throws a party for tiny returning shorebirds — crafts, spotting scopes, and rangers who love kid questions.</p>
+      </div>
+      <div class="see-card">
+        <div class="num">03</div>
+        <h3><a href="https://www.pier39.com/summeroflove/" target="_blank" rel="noopener">Summer of Love Weekend at PIER 39</a></h3>
+        <p>Sixties style takes over the wharf — free live bands and a DIY tie-dye station, sea lions included.</p>
+      </div>
+    </div>
+
+    <div id="region-blocks"></div>
+
+    <p class="demo-note">Every event above is checked against its own official source before it's listed. This lineup gets re-verified early Friday, Saturday, and Sunday morning for last-minute changes, and the page clears out again Monday to start building toward next weekend.</p>
+  </section>
+
+  <section id="view-map" class="view">
+    <p class="section-label">This Weekend, On The Map</p>
+    <div id="map"></div>
+    <div class="map-legend" id="mapLegend"></div>
+    <p class="map-legend-note" id="mapLegendNote">48 Spots — Fri Aug 21 – Sun Aug 23, 2026</p>
+  </section>
+
+</div>
+
+<script>
+const EVENTS = [
+  {
+    "title": "Fillmore After Dark Night Market: Hot August Night",
+    "link": "https://livablecity.org/fillmore-night-market/",
+    "category": "Festivals & Fairs",
+    "region": "Central",
+    "day": "Fri",
+    "date": "2026-08-21",
+    "time": "4:00 PM",
+    "startMin": 960,
+    "neighborhood": "O'Farrell & Fillmore St, Western Addition",
+    "price": "Free",
+    "desc": "Recurring night market with bingo, a classic car show, food vendors, and live local bands.",
+    "tag": "Ongoing",
+    "lat": 37.7849,
+    "lng": -122.4326
+  },
+  {
+    "title": "Saturday Science: Drop-In Workshop for Families",
+    "link": "https://randallmuseum.org/events/saturday-science-for-august-2026/",
+    "category": "Science & Museums",
+    "region": "Central",
+    "day": "Sat",
+    "date": "2026-08-22",
+    "time": "10:30 AM",
+    "startMin": 630,
+    "neighborhood": "Randall Museum, Corona Heights",
+    "price": "$10 per adult/child combo, $5 each additional",
+    "desc": "Hands-on, project-based science workshop for kids 4 and up, drop-in style.",
+    "tag": "Weekly",
+    "lat": 37.7639,
+    "lng": -122.4402
+  },
+  {
+    "title": "Meet an Animal Ambassador",
+    "link": "https://randallmuseum.org/events/meet-an-animal-ambassador/",
+    "category": "Science & Museums",
+    "region": "Central",
+    "day": "Sat",
+    "date": "2026-08-22",
+    "time": "11:30 AM",
+    "startMin": 690,
+    "neighborhood": "Randall Museum, Corona Heights",
+    "price": "Free",
+    "desc": "Meet the museum's rescue wildlife ambassadors and learn about them from staff.",
+    "tag": "Weekly",
+    "lat": 37.7639,
+    "lng": -122.4402
+  },
+  {
+    "title": "Afternoon Art: Saturday Drop-In Workshop",
+    "link": "https://randallmuseum.org/events/afternoon-art-for-august-2026/",
+    "category": "Science & Museums",
+    "region": "Central",
+    "day": "Sat",
+    "date": "2026-08-22",
+    "time": "1:00 PM",
+    "startMin": 780,
+    "neighborhood": "Randall Museum, Corona Heights",
+    "price": "$5 per person (members 50% off)",
+    "desc": "Drop-in family art-making workshop in the museum's art studio.",
+    "tag": "Weekly",
+    "lat": 37.7639,
+    "lng": -122.4402
+  },
+  {
+    "title": "AcroSports Acro Fun Night",
+    "link": "https://acrosports.org/acro-fun-night",
+    "category": "Sports & Watch Parties",
+    "region": "Central",
+    "day": "Sat",
+    "date": "2026-08-22",
+    "time": "6:30 PM",
+    "startMin": 1110,
+    "neighborhood": "AcroSports, Bernal Heights",
+    "price": "$50 per participant",
+    "desc": "A supervised evening of open gym, games, and acrobatics for kids 6-12, with flexible drop-off.",
+    "tag": "Monthly",
+    "lat": 37.7396,
+    "lng": -122.4144
+  },
+  {
+    "title": "Sundays at the Asian Art Museum",
+    "link": "https://calendar.asianart.org/sundays/",
+    "category": "Music & Dance",
+    "region": "Central",
+    "day": "Sun",
+    "date": "2026-08-23",
+    "time": "10:30 AM",
+    "startMin": 630,
+    "neighborhood": "Asian Art Museum, Civic Center",
+    "price": "Museum admission",
+    "desc": "Family drop-in art making, storytelling, and performances all ages can join.",
+    "tag": "Weekly",
+    "lat": 37.7802,
+    "lng": -122.4158
+  },
+  {
+    "title": "Free Sunday Morning Yoga",
+    "link": "https://noevalleytownsquare.com/events",
+    "category": "Sports & Watch Parties",
+    "region": "Central",
+    "day": "Sun",
+    "date": "2026-08-23",
+    "time": "11:00 AM",
+    "startMin": 660,
+    "neighborhood": "Noe Valley Town Square, Noe Valley",
+    "price": "Free",
+    "desc": "All-levels community yoga in the square, beginners welcome \u2014 bring a mat.",
+    "tag": "Weekly",
+    "lat": 37.7502,
+    "lng": -122.4337
+  },
+  {
+    "title": "Sunday Music in the Square: Cabernet Quartet",
+    "link": "https://noevalleytownsquare.com/events",
+    "category": "Music & Dance",
+    "region": "Central",
+    "day": "Sun",
+    "date": "2026-08-23",
+    "time": "1:00 PM",
+    "startMin": 780,
+    "neighborhood": "Noe Valley Town Square, Noe Valley",
+    "price": "Free",
+    "desc": "Free classical string quartet performance in the park.",
+    "tag": "Weekly",
+    "lat": 37.7502,
+    "lng": -122.4337
+  },
+  {
+    "title": "Drop-In A Cappella Workshop with Acahub",
+    "link": "https://calendar.asianart.org/event/member-family-and-friends-days/",
+    "category": "Music & Dance",
+    "region": "Central",
+    "day": "Sun",
+    "date": "2026-08-23",
+    "time": "1:30 PM",
+    "startMin": 810,
+    "neighborhood": "Asian Art Museum, Civic Center",
+    "price": "Museum admission",
+    "desc": "Drop-in a cappella singing workshop open to all ages.",
+    "tag": null,
+    "lat": 37.7802,
+    "lng": -122.4158
+  },
+  {
+    "title": "Sunday Music in the Square: Barb Murphy",
+    "link": "https://noevalleytownsquare.com/events",
+    "category": "Music & Dance",
+    "region": "Central",
+    "day": "Sun",
+    "date": "2026-08-23",
+    "time": "2:00 PM",
+    "startMin": 840,
+    "neighborhood": "Noe Valley Town Square, Noe Valley",
+    "price": "Free",
+    "desc": "Free outdoor set blending folk, rock, country, and blues.",
+    "tag": "Weekly",
+    "lat": 37.7502,
+    "lng": -122.4337
+  },
+  {
+    "title": "End of Summer Excelsior Night Market",
+    "link": "https://www.fromtheesf.com/",
+    "category": "Festivals & Fairs",
+    "region": "Southeast",
+    "day": "Fri",
+    "date": "2026-08-21",
+    "time": "5:00 PM",
+    "startMin": 1020,
+    "neighborhood": "Ocean Ave & Mission St, Excelsior",
+    "price": "Free",
+    "desc": "End-of-summer edition of the Excelsior's night market with lei-making, hula, food and art vendors, and live music.",
+    "tag": "Ongoing",
+    "lat": 37.7247,
+    "lng": -122.4373
+  },
+  {
+    "title": "Sunday Streets Bayview",
+    "link": "https://sundaystreetssf.com/sunday-streets-bayview-2026/",
+    "category": "Festivals & Fairs",
+    "region": "Southeast",
+    "day": "Sun",
+    "date": "2026-08-23",
+    "time": "12:00 PM",
+    "startMin": 720,
+    "neighborhood": "Lane St (Thomas\u2013Underwood Ave), Bayview",
+    "price": "Free",
+    "desc": "Car-free street festival with a dedicated kids zone at K.C. Jones Playground, live music, and community performances.",
+    "tag": null,
+    "lat": 37.735,
+    "lng": -122.3894
+  },
+  {
+    "title": "SF Historium: Gold Rush Immersive Experience",
+    "link": "https://sanfranciscohistorium.com/",
+    "category": "Performances & Shows",
+    "region": "Northeast",
+    "day": "Sat",
+    "date": "2026-08-22",
+    "time": "10:00 AM",
+    "startMin": 600,
+    "neighborhood": "Pier 35, Embarcadero",
+    "price": "$40 adults / $20 youth (5-12), free under 4 - check venue",
+    "desc": "Immersive Gold Rush-era theatrical experience with costumed characters, live music, and dancing, one weekend only.",
+    "tag": null,
+    "lat": 37.8047,
+    "lng": -122.4064
+  },
+  {
+    "title": "Animal Encounter",
+    "link": "https://www.aquariumofthebay.org/daily-programs/",
+    "category": "Science & Museums",
+    "region": "Northeast",
+    "day": "Fri",
+    "date": "2026-08-21",
+    "time": "2:00 PM",
+    "startMin": 840,
+    "neighborhood": "Aquarium of the Bay, Fisherman's Wharf",
+    "price": "Included with admission",
+    "desc": "Meet animal ambassadors and learn from Aquarium of the Bay educators.",
+    "tag": "Weekly",
+    "lat": 37.8087,
+    "lng": -122.4098
+  },
+  {
+    "title": "Union Square Dances",
+    "link": "https://visitunionsquaresf.com/park-programs",
+    "category": "Music & Dance",
+    "region": "Northeast",
+    "day": "Fri",
+    "date": "2026-08-21",
+    "time": "5:00 PM",
+    "startMin": 1020,
+    "neighborhood": "Union Square",
+    "price": "Free",
+    "desc": "Free outdoor live music and dancing, rotating styles from salsa to Bollywood, open to all ages.",
+    "tag": "Weekly",
+    "lat": 37.788,
+    "lng": -122.4075
+  },
+  {
+    "title": "Summer of Love Weekend at PIER 39",
+    "link": "https://www.pier39.com/summeroflove/",
+    "category": "Music & Dance",
+    "region": "Northeast",
+    "day": "Sat",
+    "date": "2026-08-22",
+    "time": "11:00 AM",
+    "startMin": 660,
+    "neighborhood": "PIER 39, Fisherman's Wharf",
+    "price": "Free",
+    "desc": "Sixties-style weekend with free live bands, a DIY tie-dye station for kids, and a 60s fashion show overlooking the sea lions.",
+    "tag": null,
+    "lat": 37.8087,
+    "lng": -122.4098
+  },
+  {
+    "title": "Squid Dissection",
+    "link": "https://www.aquariumofthebay.org/daily-programs/",
+    "category": "Science & Museums",
+    "region": "Northeast",
+    "day": "Sat",
+    "date": "2026-08-22",
+    "time": "2:00 PM",
+    "startMin": 840,
+    "neighborhood": "Aquarium of the Bay, Fisherman's Wharf",
+    "price": "Included with admission",
+    "desc": "A hands-on look at market squid, a key food source for the aquarium's animals.",
+    "tag": "Weekly",
+    "lat": 37.8087,
+    "lng": -122.4098
+  },
+  {
+    "title": "Pier Party at Sunset",
+    "link": "https://www.fishermanswharf.org/pier-party-at-sunset/",
+    "category": "Music & Dance",
+    "region": "Northeast",
+    "day": "Sat",
+    "date": "2026-08-22",
+    "time": "5:00 PM",
+    "startMin": 1020,
+    "neighborhood": "Crab Wheel Plaza, Fisherman's Wharf",
+    "price": "Free",
+    "desc": "Free waterfront street party with a DJ, live headliner, and bay-view dancing as the sun sets.",
+    "tag": "Monthly",
+    "lat": 37.8085,
+    "lng": -122.4177
+  },
+  {
+    "title": "Summer of Love Weekend at PIER 39 (Sunday)",
+    "link": "https://www.pier39.com/summeroflove/",
+    "category": "Music & Dance",
+    "region": "Northeast",
+    "day": "Sun",
+    "date": "2026-08-23",
+    "time": "11:00 AM",
+    "startMin": 660,
+    "neighborhood": "PIER 39, Fisherman's Wharf",
+    "price": "Free",
+    "desc": "Second day of the free sixties weekend \u2014 live music, tie-dye station, and Grateful Dead-inspired shopping.",
+    "tag": null,
+    "lat": 37.8087,
+    "lng": -122.4098
+  },
+  {
+    "title": "Big Feed",
+    "link": "https://www.aquariumofthebay.org/daily-programs/",
+    "category": "Science & Museums",
+    "region": "Northeast",
+    "day": "Sun",
+    "date": "2026-08-23",
+    "time": "2:00 PM",
+    "startMin": 840,
+    "neighborhood": "Aquarium of the Bay, Fisherman's Wharf",
+    "price": "Included with admission",
+    "desc": "Watch a feeding demonstration for some of the aquarium's largest animals.",
+    "tag": "Weekly",
+    "lat": 37.8087,
+    "lng": -122.4098
+  },
+  {
+    "title": "Twist of Tradition: Hands-On Challah",
+    "link": "https://www.jccsf.org/event/twist-of-tradition-hands-on-challah-3/",
+    "category": "Festivals & Fairs",
+    "region": "North",
+    "day": "Fri",
+    "date": "2026-08-21",
+    "time": "2:30 PM",
+    "startMin": 870,
+    "neighborhood": "JCCSF, Pacific Heights",
+    "price": "Free-$5",
+    "desc": "Braid your own back-to-school-flavored challah to take home and bake.",
+    "tag": "Monthly",
+    "lat": 37.7886,
+    "lng": -122.4405
+  },
+  {
+    "title": "Presidio Tunnel Tops Campfire Program",
+    "link": "https://www.parksconservancy.org/presidio-tunnel-tops-events",
+    "category": "Science & Museums",
+    "region": "North",
+    "day": "Fri",
+    "date": "2026-08-21",
+    "time": "3:00 PM",
+    "startMin": 900,
+    "neighborhood": "Presidio Tunnel Tops Campfire Circle",
+    "price": "Free",
+    "desc": "Daily ranger-led campfire talks for kids and families, running through Labor Day.",
+    "tag": "Ongoing",
+    "lat": 37.7989,
+    "lng": -122.4677
+  },
+  {
+    "title": "Luca (2021) Film Screening",
+    "link": "https://waltdisney.org/luca",
+    "category": "Movie Nights",
+    "region": "North",
+    "day": "Fri",
+    "date": "2026-08-21",
+    "time": "3:00 PM",
+    "startMin": 900,
+    "neighborhood": "Walt Disney Family Museum, Presidio",
+    "price": "$10 adults / $8 youth / $5 w/ admission, free under 5",
+    "desc": "Special theatrical run of Pixar's Luca, screening daily through August.",
+    "tag": "Ongoing",
+    "lat": 37.7998,
+    "lng": -122.4527
+  },
+  {
+    "title": "Yosakoi Dancing with Ito Yosakoi",
+    "link": "https://www.jcccnc.org/events/yosakoi-dancing-with-ito-yosakoi/",
+    "category": "Music & Dance",
+    "region": "North",
+    "day": "Fri",
+    "date": "2026-08-21",
+    "time": "7:00 PM",
+    "startMin": 1140,
+    "neighborhood": "JCCCNC, Japantown",
+    "price": "$3-5 drop-in",
+    "desc": "Lively Yosakoi dance choreography blending traditional movement with modern music, no experience needed.",
+    "tag": "Weekly",
+    "lat": 37.7854,
+    "lng": -122.4297
+  },
+  {
+    "title": "Luca (2021) Film Screening",
+    "link": "https://waltdisney.org/luca",
+    "category": "Movie Nights",
+    "region": "North",
+    "day": "Sat",
+    "date": "2026-08-22",
+    "time": "3:00 PM",
+    "startMin": 900,
+    "neighborhood": "Walt Disney Family Museum, Presidio",
+    "price": "$10 adults / $8 youth / $5 w/ admission, free under 5",
+    "desc": "Special theatrical run of Pixar's Luca, screening daily through August.",
+    "tag": "Ongoing",
+    "lat": 37.7998,
+    "lng": -122.4527
+  },
+  {
+    "title": "Luca (2021) Film Screening",
+    "link": "https://waltdisney.org/luca",
+    "category": "Movie Nights",
+    "region": "North",
+    "day": "Sun",
+    "date": "2026-08-23",
+    "time": "3:00 PM",
+    "startMin": 900,
+    "neighborhood": "Walt Disney Family Museum, Presidio",
+    "price": "$10 adults / $8 youth / $5 w/ admission, free under 5",
+    "desc": "Special theatrical run of Pixar's Luca, screening daily through August.",
+    "tag": "Ongoing",
+    "lat": 37.7998,
+    "lng": -122.4527
+  },
+  {
+    "title": "National Geographic Live: Uncovering Our Concrete Jungle",
+    "link": "https://www.presidiotheatre.org/show-details/national-geographic-live-uncovering-our-concrete-jungle-with-chris-schell",
+    "category": "Science & Museums",
+    "region": "North",
+    "day": "Sun",
+    "date": "2026-08-23",
+    "time": "2:00 PM",
+    "startMin": 840,
+    "neighborhood": "Presidio Theatre, Presidio",
+    "price": "$17-$66",
+    "desc": "UC Berkeley urban ecologist Chris Schell explores how coyotes, rats, and raccoons adapt to city life, in a live family talk.",
+    "tag": null,
+    "lat": 37.7989,
+    "lng": -122.4662
+  },
+  {
+    "title": "Welcome Back Plover Party",
+    "link": "https://sunsetdunes.org/events",
+    "category": "Festivals & Fairs",
+    "region": "West",
+    "day": "Sat",
+    "date": "2026-08-22",
+    "time": "11:00 AM",
+    "startMin": 660,
+    "neighborhood": "Sunset Dunes @ Judah, Outer Sunset",
+    "price": "Free",
+    "desc": "Family celebration of returning Western Snowy Plovers at Ocean Beach, with plover crafts, spotting scopes, and NPS biologists.",
+    "tag": null,
+    "lat": 37.7602,
+    "lng": -122.5107
+  },
+  {
+    "title": "Golden Gate Park Band: Celebrating Ukrainian Culture",
+    "link": "https://goldengateparkband.org/calendar/celebrating-ukrainian-culture",
+    "category": "Music & Dance",
+    "region": "West",
+    "day": "Sun",
+    "date": "2026-08-23",
+    "time": "1:00 PM",
+    "startMin": 780,
+    "neighborhood": "Spreckels Temple of Music, Golden Gate Park",
+    "price": "Free",
+    "desc": "Free outdoor concert honoring Ukrainian heritage with folk melodies and dance.",
+    "tag": "Weekly",
+    "lat": 37.7719,
+    "lng": -122.4672
+  },
+  {
+    "title": "Story Time at Tilden Nature Area",
+    "link": "https://www.ebparks.org/events/story-time-187",
+    "category": "Science & Museums",
+    "region": "East Bay",
+    "day": "Fri",
+    "date": "2026-08-21",
+    "time": "10:30 AM",
+    "startMin": 630,
+    "neighborhood": "Tilden Nature Area, Berkeley",
+    "price": "Free",
+    "desc": "Nature-themed storytime for young kids at the Environmental Education Center.",
+    "tag": "Weekly",
+    "lat": 37.9096,
+    "lng": -122.2422
+  },
+  {
+    "title": "King Tut Festival",
+    "link": "https://www.kingtutfestival.com/event-details-registration/king-tut-festival-2",
+    "category": "Festivals & Fairs",
+    "region": "East Bay",
+    "day": "Fri",
+    "date": "2026-08-21",
+    "time": "6:00 PM (through Sun)",
+    "startMin": 1080,
+    "neighborhood": "Coptic Youth Center, Hayward",
+    "price": "Free",
+    "desc": "The Bay Area's longest-running Egyptian cultural festival, with music, dance, food, and family activities all weekend.",
+    "tag": null,
+    "lat": 37.6688,
+    "lng": -122.0808
+  },
+  {
+    "title": "Friday Nights at OMCA: Sabrina Shauna",
+    "link": "https://museumca.org/events",
+    "category": "Music & Dance",
+    "region": "East Bay",
+    "day": "Fri",
+    "date": "2026-08-21",
+    "time": "5:00 PM",
+    "startMin": 1020,
+    "neighborhood": "Oakland Museum of California, Lake Merritt",
+    "price": "Free",
+    "desc": "Bay Area artist Sabrina Shauna performs R&B/pop on the Garden Stage as part of OMCA's free Friday Nights series.",
+    "tag": "Weekly",
+    "lat": 37.7994,
+    "lng": -122.2607
+  },
+  {
+    "title": "Oakland Chinatown StreetFest",
+    "link": "https://www.oaklandchinatownchamber.org/streetfest",
+    "category": "Festivals & Fairs",
+    "region": "East Bay",
+    "day": "Sat",
+    "date": "2026-08-22",
+    "time": "10:00 AM",
+    "startMin": 600,
+    "neighborhood": "Oakland Chinatown",
+    "price": "Free",
+    "desc": "The 37th annual StreetFest with lion dances, live entertainment stages, vendors, and food for the family.",
+    "tag": null,
+    "lat": 37.7955,
+    "lng": -122.2681
+  },
+  {
+    "title": "Rockridge Rock-N-Stroll",
+    "link": "https://www.rockridgedistrict.com/rocknstroll",
+    "category": "Music & Dance",
+    "region": "East Bay",
+    "day": "Sat",
+    "date": "2026-08-22",
+    "time": "11:00 AM",
+    "startMin": 660,
+    "neighborhood": "College Ave, Rockridge, Oakland",
+    "price": "Free",
+    "desc": "A family- and pet-friendly stroll down College Avenue with 20+ live bands, local artists, and kids' crafting.",
+    "tag": null,
+    "lat": 37.8447,
+    "lng": -122.2519
+  },
+  {
+    "title": "Sunday Stroll: Skyline Gardens",
+    "link": "https://www.ebparks.org/events/sunday-stroll-skyline-gardens",
+    "category": "Science & Museums",
+    "region": "East Bay",
+    "day": "Sun",
+    "date": "2026-08-23",
+    "time": "8:30 AM",
+    "startMin": 510,
+    "neighborhood": "Skyline Gardens, Oakland Hills",
+    "price": "Free",
+    "desc": "A guided nature walk through Skyline Gardens' native plant restoration area.",
+    "tag": null,
+    "lat": 37.814,
+    "lng": -122.1685
+  },
+  {
+    "title": "Movie Night in the Park",
+    "link": "https://www.ssfca.gov/Departments/Parks-Recreation/Events/Movie-Night-in-the-Park",
+    "category": "Movie Nights",
+    "region": "Peninsula",
+    "day": "Fri",
+    "date": "2026-08-21",
+    "time": "7:00 PM",
+    "startMin": 1140,
+    "neighborhood": "Terrabay Gym & Rec Center, South San Francisco",
+    "price": "Free",
+    "desc": "Free outdoor family movie night on the lawn \u2014 bring blankets and low-back chairs.",
+    "tag": null,
+    "lat": 37.6547,
+    "lng": -122.4327
+  },
+  {
+    "title": "Bay Area Chocolate Chip Cookie Festival",
+    "link": "https://www.moah.org/moahevents/moahs-chocolate-chip-cookie-festival",
+    "category": "Festivals & Fairs",
+    "region": "Peninsula",
+    "day": "Sat",
+    "date": "2026-08-22",
+    "time": "1:00 PM",
+    "startMin": 780,
+    "neighborhood": "Museum of American Heritage, Palo Alto",
+    "price": "Free",
+    "desc": "End-of-summer bash with cookies and milk, LEGO building, historic games, and face painting.",
+    "tag": null,
+    "lat": 37.4419,
+    "lng": -122.1591
+  },
+  {
+    "title": "San Jose Cactus & Succulent Society Summer Show and Sale",
+    "link": "https://csssj.org/",
+    "category": "Festivals & Fairs",
+    "region": "South Bay",
+    "day": "Fri",
+    "date": "2026-08-21",
+    "time": "6:00 PM",
+    "startMin": 1080,
+    "neighborhood": "Peterson Middle School, Sunnyvale",
+    "price": "Free",
+    "desc": "Three-day cactus and succulent show and sale with vendor booths and plant displays for the family.",
+    "tag": null,
+    "lat": 37.3688,
+    "lng": -122.0363
+  },
+  {
+    "title": "San Jose Cactus & Succulent Society Summer Show and Sale",
+    "link": "https://csssj.org/",
+    "category": "Festivals & Fairs",
+    "region": "South Bay",
+    "day": "Sat",
+    "date": "2026-08-22",
+    "time": "8:00 AM",
+    "startMin": 480,
+    "neighborhood": "Peterson Middle School, Sunnyvale",
+    "price": "Free",
+    "desc": "Three-day cactus and succulent show and sale with vendor booths and plant displays for the family.",
+    "tag": null,
+    "lat": 37.3688,
+    "lng": -122.0363
+  },
+  {
+    "title": "Carnival Nights at Gilroy Gardens",
+    "link": "https://www.gilroygardens.org/events/",
+    "category": "Festivals & Fairs",
+    "region": "South Bay",
+    "day": "Sat",
+    "date": "2026-08-22",
+    "time": "4:00 PM",
+    "startMin": 960,
+    "neighborhood": "Gilroy Gardens, Gilroy",
+    "price": "$19.99 (free w/ Premium Membership)",
+    "desc": "Evening carnival programming with magic shows, juggling, balloon artists, and games.",
+    "tag": "Weekly",
+    "lat": 37.0021,
+    "lng": -121.5919
+  },
+  {
+    "title": "San Jose Cactus & Succulent Society Summer Show and Sale",
+    "link": "https://csssj.org/",
+    "category": "Festivals & Fairs",
+    "region": "South Bay",
+    "day": "Sun",
+    "date": "2026-08-23",
+    "time": "11:00 AM",
+    "startMin": 660,
+    "neighborhood": "Peterson Middle School, Sunnyvale",
+    "price": "Free",
+    "desc": "Three-day cactus and succulent show and sale with vendor booths and plant displays for the family.",
+    "tag": null,
+    "lat": 37.3688,
+    "lng": -122.0363
+  },
+  {
+    "title": "Carnival Nights at Gilroy Gardens",
+    "link": "https://www.gilroygardens.org/events/",
+    "category": "Festivals & Fairs",
+    "region": "South Bay",
+    "day": "Sun",
+    "date": "2026-08-23",
+    "time": "4:00 PM",
+    "startMin": 960,
+    "neighborhood": "Gilroy Gardens, Gilroy",
+    "price": "$19.99 (free w/ Premium Membership)",
+    "desc": "Evening carnival programming with magic shows, juggling, balloon artists, and games.",
+    "tag": "Weekly",
+    "lat": 37.0021,
+    "lng": -121.5919
+  },
+  {
+    "title": "Undertale: The Determination Symphony",
+    "link": "https://sanjosetheaters.org/event/undertale-symphony/",
+    "category": "Music & Dance",
+    "region": "South Bay",
+    "day": "Sun",
+    "date": "2026-08-23",
+    "time": "3:00 PM",
+    "startMin": 900,
+    "neighborhood": "San Jose Civic, San Jose",
+    "price": "Ticketed - check venue",
+    "desc": "All-ages matinee orchestral concert of Undertale video game music with gameplay footage on screen.",
+    "tag": null,
+    "lat": 37.3327,
+    "lng": -121.8853
+  },
+  {
+    "title": "Storytime at Napa Bookmine",
+    "link": "https://napabookmine.com/upcoming-events",
+    "category": "Performances & Shows",
+    "region": "North Bay",
+    "day": "Fri",
+    "date": "2026-08-21",
+    "time": "10:00 AM",
+    "startMin": 600,
+    "neighborhood": "Napa Bookmine, Napa",
+    "price": "Free",
+    "desc": "A cozy weekly storytime reading classic and new picture books for young kids.",
+    "tag": "Weekly",
+    "lat": 38.2975,
+    "lng": -122.2869
+  },
+  {
+    "title": "The Curtain Theatre presents Love's Labour's Lost",
+    "link": "https://www.curtaintheatre.org/",
+    "category": "Performances & Shows",
+    "region": "North Bay",
+    "day": "Sat",
+    "date": "2026-08-22",
+    "time": "2:00 PM",
+    "startMin": 840,
+    "neighborhood": "Old Mill Park, Mill Valley",
+    "price": "Free",
+    "desc": "Free outdoor Shakespeare in the amphitheater behind the Mill Valley library \u2014 bring a blanket.",
+    "tag": "Weekly",
+    "lat": 37.906,
+    "lng": -122.5449
+  },
+  {
+    "title": "Sunday Farm Open House",
+    "link": "https://www.connollyranch.org/sundayfarmopenhouse",
+    "category": "Science & Museums",
+    "region": "North Bay",
+    "day": "Sun",
+    "date": "2026-08-23",
+    "time": "9:00 AM",
+    "startMin": 540,
+    "neighborhood": "Connolly Ranch, Napa",
+    "price": "$12 adults / $5 kids 2+, free under 2",
+    "desc": "Self-guided family visit to a working ranch \u2014 meet farm animals and explore the grounds.",
+    "tag": "Ongoing",
+    "lat": 38.2679,
+    "lng": -122.2843
+  },
+  {
+    "title": "The Curtain Theatre presents Love's Labour's Lost",
+    "link": "https://www.curtaintheatre.org/",
+    "category": "Performances & Shows",
+    "region": "North Bay",
+    "day": "Sun",
+    "date": "2026-08-23",
+    "time": "2:00 PM",
+    "startMin": 840,
+    "neighborhood": "Old Mill Park, Mill Valley",
+    "price": "Free",
+    "desc": "Free outdoor Shakespeare in the amphitheater behind the Mill Valley library \u2014 bring a blanket.",
+    "tag": "Weekly",
+    "lat": 37.906,
+    "lng": -122.5449
+  },
+  {
+    "title": "Sonoma Sundays on the Plaza",
+    "link": "https://www.sonomacity.org/event/sonoma-sundays-free-concerts-at-the-plaza-amphitheater-2026-06-07-2026-06-14-2026-06-21-2026-06-28-2026-07-05-2026-07-12-2026-07-19-2026-07-26-2026-08-02-2026-08-09-2026-08-16-2026-08-23-20-2026-09-27/",
+    "category": "Music & Dance",
+    "region": "North Bay",
+    "day": "Sun",
+    "date": "2026-08-23",
+    "time": "2:00 PM",
+    "startMin": 840,
+    "neighborhood": "Sonoma Plaza (Grinstead Amphitheater)",
+    "price": "Free",
+    "desc": "Free family-friendly outdoor concert series on Sonoma Plaza, this week featuring jazz.",
+    "tag": "Weekly",
+    "lat": 38.2919,
+    "lng": -122.458
+  }
+];
+
+const REGION_ORDER = ["Central","Southeast","Northeast","North","West","East Bay","Peninsula","South Bay","North Bay"];
+const SF_REGIONS = new Set(["Central","Southeast","Northeast","North","West"]);
+
+/* ---- Ordering ----
+   Strictly chronological within each region:
+   1. day:   Friday  →  Saturday  →  Sunday   (multi-day events sort by first day)
+   2. time:  earliest start first
+   Tags (Ongoing/Monthly/Weekly) are informational only and do not affect order. */
+const DAY_RANK = { "fri":0, "sat":1, "sun":2 };
+
+function dayRank(day){
+  const first = day.toLowerCase().slice(0,3);
+  return DAY_RANK[first] !== undefined ? DAY_RANK[first] : 9;
+}
+function sortEvents(list){
+  return list.slice().sort((a,b)=>
+    dayRank(a.day) - dayRank(b.day) ||
+    (a.startMin ?? 9999) - (b.startMin ?? 9999)
+  );
+}
+
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("view-"+btn.dataset.view).classList.add("active");
+    if(btn.dataset.view==="map"){ setTimeout(()=>{ if(window._leafletMap) window._leafletMap.invalidateSize(); },50); }
+  });
+});
+
+function renderRegions(){
+  const container = document.getElementById("region-blocks");
+  const byRegion = {};
+  EVENTS.forEach(e=>{ (byRegion[e.region] = byRegion[e.region]||[]).push(e); });
+
+  REGION_ORDER.filter(r=>byRegion[r]).forEach(region=>{
+    const block = document.createElement("div");
+    block.className = "region-block";
+    const sfLabel = SF_REGIONS.has(region) ? `<span class="sf-label">San Francisco</span>` : '';
+    const left = document.createElement("div");
+    left.className = "region-title-col";
+    left.innerHTML = `<h3 class="region-title">${region}${sfLabel}</h3><span class="region-count">${byRegion[region].length} Event${byRegion[region].length>1?'s':''}</span>`;
+    const right = document.createElement("div");
+    sortEvents(byRegion[region]).forEach(e=>{
+      const row = document.createElement("div");
+      row.className = "event-row";
+      row.innerHTML = `
+        <div class="event-body">
+          <h4><a href="${e.link}" target="_blank" rel="noopener">${e.title}</a></h4>${e.tag ? `<span class="event-tag ${e.tag.toLowerCase()}">${e.tag}</span>` : ''}
+          <p class="event-desc">${e.desc}</p>
+          <div class="event-meta">
+            <span><span class="k">When</span>${e.day}, ${e.time}</span>
+            <span><span class="k">Where</span>${e.neighborhood}</span>
+            <span><span class="k">Cost</span>${e.price}</span>
+          </div>
+        </div>`;
+      right.appendChild(row);
+    });
+    block.appendChild(left);
+    block.appendChild(right);
+    container.appendChild(block);
+  });
+}
+renderRegions();
+
+const categoryColors = {
+  "Festivals & Fairs":"#E8380D",
+  "Movie Nights":"#6A2FD1",
+  "Performances & Shows":"#E8A400",
+  "Science & Museums":"#00A19B",
+  "Music & Dance":"#D6127A",
+  "Sports & Watch Parties":"#1257D6"
+};
+const map = L.map('map', {scrollWheelZoom:false}).setView([37.72,-122.15], 10);
+window._leafletMap = map;
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution:'&copy; OpenStreetMap &copy; CARTO', maxZoom:19
+}).addTo(map);
+
+EVENTS.forEach(e=>{
+  const color = categoryColors[e.category] || "#17140F";
+  const marker = L.circleMarker([e.lat,e.lng], {
+    radius:8, color:"#FFFFFF", weight:2.5, fillColor:color, fillOpacity:1
+  }).addTo(map);
+  marker.bindPopup(`<b>${e.title}</b><br><span style="color:${color}; font-weight:700;">${e.category}</span><br>${e.day}, ${e.date} · ${e.time}<br>${e.neighborhood}<br>${e.price}<br><a href="${e.link}" target="_blank" rel="noopener">Event page →</a>`);
+});
+
+const legendEl = document.getElementById("mapLegend");
+legendEl.innerHTML = Object.entries(categoryColors).map(([cat,color])=>
+  `<span class="legend-chip"><i style="background:${color}"></i>${cat}</span>`
+).join("");
+
+document.getElementById("mapLegendNote").textContent = `${EVENTS.length} Spots — Fri Aug 21 – Sun Aug 23, 2026`;
+</script>
+
+</body>
+</html>
